@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/alecthomas/chroma/v2"
 	"github.com/go-pdf/fpdf"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -29,7 +30,7 @@ func (r *nativeRenderer) Render(_ context.Context, in RenderInput) error {
 	pdf.SetAutoPageBreak(true, 20)
 	pdf.AddPage()
 
-	w := &nativeWriter{pdf: pdf, src: in.Source}
+	w := &nativeWriter{pdf: pdf, src: in.Source, pageBreakLevel: in.PageBreakLevel}
 	w.initFonts()
 
 	if in.Title != "" {
@@ -77,11 +78,13 @@ func nativeMDParser() parser.Parser {
 // ── State ──────────────────────────────────────────────────────────────────
 
 type nativeWriter struct {
-	pdf          *fpdf.Fpdf
-	src          []byte
-	listDepth    int
-	listOrdered  []bool
-	listCounters []int
+	pdf             *fpdf.Fpdf
+	src             []byte
+	listDepth       int
+	listOrdered     []bool
+	listCounters    []int
+	pageBreakLevel  int // 0 = disabled, 2 = h2, 3 = h3
+	breakLevelCount int // headings seen at pageBreakLevel; first is never preceded by a break
 }
 
 // inlineRun holds a segment of inline text with its formatting state.
@@ -196,6 +199,13 @@ func (w *nativeWriter) drawTitle(title string) {
 }
 
 func (w *nativeWriter) renderHeading(node *ast.Heading) {
+	if w.pageBreakLevel > 0 && node.Level == w.pageBreakLevel {
+		if w.breakLevelCount > 0 {
+			w.pdf.AddPage()
+		}
+		w.breakLevelCount++
+	}
+
 	content := w.collectText(node)
 	pw, _ := w.pdf.GetPageSize()
 	lm, _, rm, _ := w.pdf.GetMargins()
@@ -258,42 +268,65 @@ func (w *nativeWriter) renderParagraph(node *ast.Paragraph) {
 }
 
 func (w *nativeWriter) renderCodeBlock(node ast.Node) {
-	var lines []string
+	// Detect language from fenced code block info string.
+	lang := ""
+	if fb, ok := node.(*ast.FencedCodeBlock); ok {
+		if lb := fb.Language(w.src); lb != nil {
+			lang = strings.TrimSpace(string(lb))
+		}
+	}
+
+	// Collect raw source lines.
+	var rawLines []string
 	for i := 0; i < node.Lines().Len(); i++ {
 		seg := node.Lines().At(i)
-		lines = append(lines, strings.TrimRight(string(seg.Value(w.src)), "\n"))
+		rawLines = append(rawLines, strings.TrimRight(string(seg.Value(w.src)), "\n"))
 	}
-	content := strings.Join(lines, "\n")
+	content := strings.Join(rawLines, "\n")
+
+	// Tokenize with chroma.
+	tokens, _ := tokenize(lang, content)
+	tokenLines := splitTokensByLine(tokens)
+	if len(tokenLines) == 0 {
+		tokenLines = [][]chroma.Token{{}}
+	}
 
 	w.pdf.Ln(3)
 	lm, _, rm, _ := w.pdf.GetMargins()
 	pw, _ := w.pdf.GetPageSize()
 	boxW := pw - lm - rm
 
-	w.pdf.SetFont("Courier", "", 9)
-	lineH := 4.5
-	lineCount := float64(len(lines))
-	if lineCount == 0 {
-		lineCount = 1
-	}
-	boxH := lineCount*lineH + 10
+	const lineH = 4.5
+	boxH := float64(len(tokenLines))*lineH + 10
 
-	x, y := w.pdf.GetX(), w.pdf.GetY()
+	startX, startY := w.pdf.GetX(), w.pdf.GetY()
+
+	// Background
 	w.pdf.SetFillColor(nColCodeBG.r, nColCodeBG.g, nColCodeBG.b)
-	w.pdf.Rect(x, y, boxW, boxH, "F")
+	w.pdf.Rect(startX, startY, boxW, boxH, "F")
 
 	// Decorative ● ● ●
 	w.pdf.SetFont("Courier", "", 6)
 	w.pdf.SetTextColor(nColCodeDot.r, nColCodeDot.g, nColCodeDot.b)
-	w.pdf.SetXY(x+boxW-20, y+2)
+	w.pdf.SetXY(startX+boxW-20, startY+2)
 	w.pdf.CellFormat(18, 4, "● ● ●", "", 0, "R", false, 0, "")
 
+	// Render token by token, line by line.
 	w.pdf.SetFont("Courier", "", 9)
-	w.pdf.SetTextColor(nColCodeFG.r, nColCodeFG.g, nColCodeFG.b)
-	w.pdf.SetXY(x+5, y+5)
-	w.pdf.MultiCell(boxW-10, lineH, content, "", "L", false)
+	for li, line := range tokenLines {
+		curX := startX + 5
+		curY := startY + 5 + float64(li)*lineH
+		for _, tok := range line {
+			r, g, b := tokenRGB(tok.Type)
+			w.pdf.SetTextColor(int(r), int(g), int(b))
+			w.pdf.SetXY(curX, curY)
+			tokW := w.pdf.GetStringWidth(tok.Value)
+			w.pdf.CellFormat(tokW, lineH, tok.Value, "", 0, "L", false, 0, "")
+			curX += tokW
+		}
+	}
 
-	w.pdf.SetXY(lm, y+boxH)
+	w.pdf.SetXY(lm, startY+boxH)
 	w.pdf.Ln(5)
 	w.pdf.SetFont("Helvetica", "", 11)
 	w.setColor(nColFG)

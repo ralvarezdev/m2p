@@ -42,7 +42,7 @@ Phase 0 is shippable on its own. Phase 1 is an additive sandbox backend swap; it
 
 Reuse the existing `sandbox_type` discriminator on `conversations`. Add one new value:
 
-```
+```yaml
 sandbox_type: anthropic | docker | e2b | daytona | plc
 ```
 

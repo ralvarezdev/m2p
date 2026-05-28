@@ -34,12 +34,16 @@ func ParseEngine(s string) (Engine, error) {
 // RenderInput is the structured document passed to every PDF engine.
 type RenderInput struct {
 	// Source is the raw Markdown bytes — each engine parses it independently.
-	Source     []byte
-	Title      string
-	Date       string
-	ShowFooter bool
-	Paper      Paper
-	Output     string
+	Source         []byte
+	Title          string
+	Date           string
+	ShowFooter     bool
+	Paper          Paper
+	Output         string
+	// PageBreakLevel inserts a page break before every heading at this level
+	// (2 = h2, 3 = h3, 0 = disabled). The first heading at the level is never
+	// preceded by a break so the opening section stays on the title page.
+	PageBreakLevel int
 }
 
 // Renderer converts a Markdown document to a PDF file.

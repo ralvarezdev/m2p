@@ -9,10 +9,11 @@ import (
 )
 
 type templateData struct {
-	Title      string
-	Body       template.HTML
-	Date       string
-	ShowFooter bool
+	Title          string
+	Body           template.HTML
+	Date           string
+	ShowFooter     bool
+	PageBreakLevel int
 }
 
 var docTmpl = mustLoadTemplate()
@@ -30,12 +31,13 @@ func mustLoadTemplate() *template.Template {
 }
 
 // RenderTemplate injects the HTML fragment into the full document template.
-func RenderTemplate(fragment []byte, title, date string, showFooter bool) ([]byte, error) {
+func RenderTemplate(fragment []byte, title, date string, showFooter bool, pageBreakLevel int) ([]byte, error) {
 	data := templateData{
-		Title:      title,
-		Body:       template.HTML(fragment), //nolint:gosec // fragment comes from goldmark, not user input
-		Date:       date,
-		ShowFooter: showFooter,
+		Title:          title,
+		Body:           template.HTML(fragment), //nolint:gosec // fragment comes from goldmark, not user input
+		Date:           date,
+		ShowFooter:     showFooter,
+		PageBreakLevel: pageBreakLevel,
 	}
 	var buf bytes.Buffer
 	if err := docTmpl.Execute(&buf, data); err != nil {

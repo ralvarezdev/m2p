@@ -72,16 +72,26 @@ Examples:
 		noFooter, _ := cmd.Flags().GetBool("no-footer")
 		openAfter, _ := cmd.Flags().GetBool("open")
 
+		pageBreakStr := viper.GetString("page-break")
+		if v, _ := cmd.Flags().GetString("page-break"); v != "" {
+			pageBreakStr = v
+		}
+		pageBreakLevel, err := converter.ParsePageBreak(pageBreakStr)
+		if err != nil {
+			return err
+		}
+
 		infof("converting %s → %s [%s, %s, engine:%s]", input, output, format, paper, engine)
 
 		opts := converter.Options{
-			Input:      input,
-			Output:     output,
-			Format:     format,
-			Paper:      paper,
-			Engine:     engine,
-			ShowFooter: !noFooter,
-			Open:       openAfter,
+			Input:          input,
+			Output:         output,
+			Format:         format,
+			Paper:          paper,
+			Engine:         engine,
+			ShowFooter:     !noFooter,
+			Open:           openAfter,
+			PageBreakLevel: pageBreakLevel,
 		}
 
 		if err := converter.Convert(opts); err != nil {
@@ -104,6 +114,7 @@ func init() {
 	convertCmd.Flags().String("engine", "auto", "PDF engine: auto, chromium, native")
 	convertCmd.Flags().Bool("no-footer", false, "suppress the brand footer")
 	convertCmd.Flags().Bool("open", false, "open output file after conversion")
+	convertCmd.Flags().String("page-break", "none", "insert page breaks before headings: none, h2, h3")
 
 	// Bind to viper so env vars and config file apply.
 	_ = viper.BindPFlag("format", convertCmd.Flags().Lookup("format"))
@@ -111,8 +122,10 @@ func init() {
 	_ = viper.BindPFlag("engine", convertCmd.Flags().Lookup("engine"))
 	_ = viper.BindPFlag("no-footer", convertCmd.Flags().Lookup("no-footer"))
 	_ = viper.BindPFlag("open", convertCmd.Flags().Lookup("open"))
+	_ = viper.BindPFlag("page-break", convertCmd.Flags().Lookup("page-break"))
 
 	viper.SetDefault("format", "pdf")
 	viper.SetDefault("paper", "a4")
 	viper.SetDefault("engine", "auto")
+	viper.SetDefault("page-break", "none")
 }

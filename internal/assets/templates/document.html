@@ -245,6 +245,8 @@
       }
       .document h2, .document h3 { break-after: avoid; }
       .document pre { break-inside: avoid; }
+      {{if eq .PageBreakLevel 2}}.document h2 ~ h2 { break-before: page; }{{end}}
+      {{if eq .PageBreakLevel 3}}.document h3 ~ h3 { break-before: page; }{{end}}
       .document h1  { font-size: 28px; }
       .document h2  { font-size: 18px; }
       .document h3  { font-size: 13px; }

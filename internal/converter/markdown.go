@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"regexp"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
 )
@@ -14,6 +16,12 @@ var md = goldmark.New(
 	goldmark.WithExtensions(
 		extension.GFM,
 		extension.Table,
+		highlighting.NewHighlighting(
+			highlighting.WithStyle(highlightTheme),
+			highlighting.WithFormatOptions(
+				chromahtml.WithLineNumbers(false),
+			),
+		),
 	),
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),

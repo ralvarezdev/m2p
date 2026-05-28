@@ -125,7 +125,7 @@ func (r *chromiumRenderer) Render(ctx context.Context, in RenderInput) error {
 		in.Title = title
 	}
 
-	htmlBytes, err := RenderTemplate(fragment, in.Title, in.Date, in.ShowFooter)
+	htmlBytes, err := RenderTemplate(fragment, in.Title, in.Date, in.ShowFooter, in.PageBreakLevel)
 	if err != nil {
 		return fmt.Errorf("render template: %w", err)
 	}

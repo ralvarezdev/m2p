@@ -60,13 +60,28 @@ func ParsePaper(s string) (Paper, error) {
 
 // Options configures a single conversion run.
 type Options struct {
-	Input      string
-	Output     string
-	Format     Format
-	Paper      Paper
-	Engine     Engine
-	ShowFooter bool
-	Open       bool
+	Input          string
+	Output         string
+	Format         Format
+	Paper          Paper
+	Engine         Engine
+	ShowFooter     bool
+	Open           bool
+	PageBreakLevel int // 0 = none, 2 = h2, 3 = h3
+}
+
+// ParsePageBreak converts the --page-break flag value to a heading level int.
+func ParsePageBreak(s string) (int, error) {
+	switch strings.ToLower(s) {
+	case "none", "":
+		return 0, nil
+	case "h2":
+		return 2, nil
+	case "h3":
+		return 3, nil
+	default:
+		return 0, fmt.Errorf("unknown page-break value %q: must be none, h2, or h3", s)
+	}
 }
 
 // DefaultOutput returns the output path derived from input when not specified.
@@ -112,7 +127,7 @@ func convertHTML(src []byte, opts Options, title, date string) error {
 	if mdTitle != "" {
 		title = mdTitle
 	}
-	htmlBytes, err := RenderTemplate(fragment, title, date, opts.ShowFooter)
+	htmlBytes, err := RenderTemplate(fragment, title, date, opts.ShowFooter, opts.PageBreakLevel)
 	if err != nil {
 		return fmt.Errorf("render template: %w", err)
 	}
@@ -125,12 +140,13 @@ func convertPDF(src []byte, opts Options, title, date string) error {
 
 	renderer := NewRenderer(opts.Engine)
 	return renderer.Render(context.Background(), RenderInput{
-		Source:     src,
-		Title:      title,
-		Date:       date,
-		ShowFooter: opts.ShowFooter,
-		Paper:      opts.Paper,
-		Output:     pdfOut,
+		Source:         src,
+		Title:          title,
+		Date:           date,
+		ShowFooter:     opts.ShowFooter,
+		Paper:          opts.Paper,
+		Output:         pdfOut,
+		PageBreakLevel: opts.PageBreakLevel,
 	})
 }
 
