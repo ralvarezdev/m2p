@@ -253,6 +253,10 @@
       .document p, .document li, .document td { font-size: 13px; }
       .document pre code { font-size: 11.5px; }
       .document code { font-size: .85em; }
+      {{if .ShowFooter}}
+      .doc-footer { position: fixed; bottom: 0; left: 0; right: 0; margin-top: 0; padding-top: 10px; padding-bottom: 10px; background: white; }
+      .page { padding-bottom: 52px; }
+      {{end}}
     }
   </style>
 </head>

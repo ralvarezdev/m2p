@@ -46,12 +46,13 @@ tasks:
       - go vet ./...
 
   test:convert:
-    desc: "Build and convert testdata/sample.md (e.g. task test:convert ENGINE=native)"
+    desc: "Build and convert testdata/sample.md (e.g. task test:convert ENGINE=native PAGE_BREAK=h2)"
     deps: [build]
     vars:
       ENGINE: '{{.ENGINE | default "auto"}}'
+      PAGE_BREAK: '{{.PAGE_BREAK | default "none"}}'
     cmds:
-      - "{{.BINARY}}{{exeExt}} convert testdata/sample.md -o dist/sample.pdf --engine {{.ENGINE}}"
+      - "{{.BINARY}}{{exeExt}} convert testdata/sample.md -o dist/sample.pdf --engine {{.ENGINE}} --page-break {{.PAGE_BREAK}}"
 
   tag:
     desc: "Tag and push a release — triggers the Release workflow (e.g. task tag VERSION=0.1.0)"

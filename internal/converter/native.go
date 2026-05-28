@@ -27,10 +27,23 @@ func (r *nativeRenderer) Render(_ context.Context, in RenderInput) error {
 	p := nativePaperSize(in.Paper)
 	pdf := fpdf.New("P", "mm", p, "")
 	pdf.SetMargins(20, 20, 20)
-	pdf.SetAutoPageBreak(true, 20)
-	pdf.AddPage()
+
+	// Reserve extra bottom space when the footer is active so auto page breaks
+	// trigger before content flows under the footer band (~10 mm).
+	bottomBreakMargin := 20.0
+	if in.ShowFooter {
+		bottomBreakMargin = 30.0
+	}
+	pdf.SetAutoPageBreak(true, bottomBreakMargin)
 
 	w := &nativeWriter{pdf: pdf, src: in.Source, pageBreakLevel: in.PageBreakLevel}
+
+	if in.ShowFooter {
+		date := in.Date
+		pdf.SetFooterFunc(func() { w.drawFooter(date) })
+	}
+
+	pdf.AddPage()
 	w.initFonts()
 
 	if in.Title != "" {
@@ -43,10 +56,6 @@ func (r *nativeRenderer) Render(_ context.Context, in RenderInput) error {
 
 	if err := ast.Walk(doc, w.walk); err != nil {
 		return fmt.Errorf("ast walk: %w", err)
-	}
-
-	if in.ShowFooter {
-		w.drawFooter(in.Date)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(in.Output), 0o755); err != nil {
@@ -501,6 +510,10 @@ func (w *nativeWriter) drawFooter(date string) {
 	w.pdf.CellFormat(0, 5, "0xRA · m2p", "", 0, "L", false, 0, "")
 	w.pdf.SetXY(lm, y)
 	w.pdf.CellFormat(pw-lm-rm, 5, date, "", 0, "R", false, 0, "")
+
+	// Restore body font so content on the next page starts correctly.
+	w.pdf.SetFont("Helvetica", "", 11)
+	w.setColor(nColFG)
 }
 
 // ── Inline helpers ─────────────────────────────────────────────────────────
