@@ -46,7 +46,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().String("config", "", "config file path (default: ~/.config/m2p/config.toml)")
-	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "suppress progress output")
+	rootCmd.PersistentFlags().BoolP(KeyQuiet, "q", false, "suppress progress output")
 
 	rootCmd.AddCommand(convertCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -59,13 +59,13 @@ func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		viper.SetConfigName("config")
-		viper.SetConfigType("toml")
+		viper.SetConfigName(ConfigFileName)
+		viper.SetConfigType(ConfigFileType)
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(xdgConfigDir())
 	}
 
-	viper.SetEnvPrefix("M2P")
+	viper.SetEnvPrefix(EnvPrefix)
 	viper.AutomaticEnv()
 
 	// Ignore missing config file — it's optional.
@@ -73,27 +73,27 @@ func initConfig() {
 }
 
 func xdgConfigDir() string {
-	if runtime.GOOS == "windows" {
-		if d := os.Getenv("APPDATA"); d != "" {
-			return filepath.Join(d, "m2p")
+	if runtime.GOOS == OSWindows {
+		if d := os.Getenv(EnvAPPDATA); d != "" {
+			return filepath.Join(d, ConfigDirName)
 		}
 	}
-	if d := os.Getenv("XDG_CONFIG_HOME"); d != "" {
-		return filepath.Join(d, "m2p")
+	if d := os.Getenv(EnvXDGConfigHome); d != "" {
+		return filepath.Join(d, ConfigDirName)
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".config", "m2p")
+	return filepath.Join(home, ConfigPathDefault, ConfigDirName)
 }
 
 func quietMode() bool {
-	q, _ := rootCmd.PersistentFlags().GetBool("quiet")
+	q, _ := rootCmd.PersistentFlags().GetBool(KeyQuiet)
 	if q {
 		return true
 	}
-	return viper.GetBool("quiet")
+	return viper.GetBool(KeyQuiet)
 }
 
 func infof(format string, args ...any) {

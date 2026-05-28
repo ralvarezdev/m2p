@@ -20,11 +20,11 @@ func (e Engine) String() string { return string(e) }
 
 func ParseEngine(s string) (Engine, error) {
 	switch strings.ToLower(s) {
-	case "auto":
+	case engineAutoStr:
 		return EngineAuto, nil
-	case "chromium":
+	case engineChromiumStr:
 		return EngineChromium, nil
-	case "native":
+	case engineNativeStr:
 		return EngineNative, nil
 	default:
 		return "", fmt.Errorf("unknown engine %q: must be auto, chromium, or native", s)

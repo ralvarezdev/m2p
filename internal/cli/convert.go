@@ -29,16 +29,16 @@ Examples:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		input := args[0]
 
-		if !strings.EqualFold(filepath.Ext(input), ".md") {
-			return fmt.Errorf("input must be a .md file, got: %s", filepath.Ext(input))
+		if !strings.EqualFold(filepath.Ext(input), converter.ExtMarkdown) {
+			return fmt.Errorf("input must be a %s file, got: %s", converter.ExtMarkdown, filepath.Ext(input))
 		}
 
 		if _, err := os.Stat(input); err != nil {
 			return fmt.Errorf("input file not found: %s", input)
 		}
 
-		formatStr := viper.GetString("format")
-		if v, _ := cmd.Flags().GetString("format"); v != "" {
+		formatStr := viper.GetString(KeyFormat)
+		if v, _ := cmd.Flags().GetString(KeyFormat); v != "" {
 			formatStr = v
 		}
 		format, err := converter.ParseFormat(formatStr)
@@ -46,8 +46,8 @@ Examples:
 			return err
 		}
 
-		paperStr := viper.GetString("paper")
-		if v, _ := cmd.Flags().GetString("paper"); v != "" {
+		paperStr := viper.GetString(KeyPaper)
+		if v, _ := cmd.Flags().GetString(KeyPaper); v != "" {
 			paperStr = v
 		}
 		paper, err := converter.ParsePaper(paperStr)
@@ -60,8 +60,8 @@ Examples:
 			output = converter.DefaultOutput(input, format)
 		}
 
-		engineStr := viper.GetString("engine")
-		if v, _ := cmd.Flags().GetString("engine"); v != "" {
+		engineStr := viper.GetString(KeyEngine)
+		if v, _ := cmd.Flags().GetString(KeyEngine); v != "" {
 			engineStr = v
 		}
 		engine, err := converter.ParseEngine(engineStr)
@@ -69,11 +69,11 @@ Examples:
 			return err
 		}
 
-		noFooter, _ := cmd.Flags().GetBool("no-footer")
-		openAfter, _ := cmd.Flags().GetBool("open")
+		noFooter, _ := cmd.Flags().GetBool(KeyNoFooter)
+		openAfter, _ := cmd.Flags().GetBool(KeyOpen)
 
-		pageBreakStr := viper.GetString("page-break")
-		if v, _ := cmd.Flags().GetString("page-break"); v != "" {
+		pageBreakStr := viper.GetString(KeyPageBreak)
+		if v, _ := cmd.Flags().GetString(KeyPageBreak); v != "" {
 			pageBreakStr = v
 		}
 		pageBreakLevel, err := converter.ParsePageBreak(pageBreakStr)
@@ -109,23 +109,23 @@ Examples:
 
 func init() {
 	convertCmd.Flags().StringP("output", "o", "", "output file path (default: <input>.pdf)")
-	convertCmd.Flags().StringP("format", "f", "pdf", "output format: pdf, html, both")
-	convertCmd.Flags().String("paper", "a4", "paper size: a4, letter, a3, legal")
-	convertCmd.Flags().String("engine", "auto", "PDF engine: auto, chromium, native")
-	convertCmd.Flags().Bool("no-footer", false, "suppress the brand footer")
-	convertCmd.Flags().Bool("open", false, "open output file after conversion")
-	convertCmd.Flags().String("page-break", "none", "insert page breaks before headings: none, h2, h3")
+	convertCmd.Flags().StringP(KeyFormat, "f", DefaultFormat, "output format: pdf, html, both")
+	convertCmd.Flags().String(KeyPaper, DefaultPaper, "paper size: a4, letter, a3, legal")
+	convertCmd.Flags().String(KeyEngine, DefaultEngine, "PDF engine: auto, chromium, native")
+	convertCmd.Flags().Bool(KeyNoFooter, false, "suppress the brand footer")
+	convertCmd.Flags().Bool(KeyOpen, false, "open output file after conversion")
+	convertCmd.Flags().String(KeyPageBreak, DefaultPageBreak, "insert page breaks before headings: none, h2, h3")
 
 	// Bind to viper so env vars and config file apply.
-	_ = viper.BindPFlag("format", convertCmd.Flags().Lookup("format"))
-	_ = viper.BindPFlag("paper", convertCmd.Flags().Lookup("paper"))
-	_ = viper.BindPFlag("engine", convertCmd.Flags().Lookup("engine"))
-	_ = viper.BindPFlag("no-footer", convertCmd.Flags().Lookup("no-footer"))
-	_ = viper.BindPFlag("open", convertCmd.Flags().Lookup("open"))
-	_ = viper.BindPFlag("page-break", convertCmd.Flags().Lookup("page-break"))
+	_ = viper.BindPFlag(KeyFormat, convertCmd.Flags().Lookup(KeyFormat))
+	_ = viper.BindPFlag(KeyPaper, convertCmd.Flags().Lookup(KeyPaper))
+	_ = viper.BindPFlag(KeyEngine, convertCmd.Flags().Lookup(KeyEngine))
+	_ = viper.BindPFlag(KeyNoFooter, convertCmd.Flags().Lookup(KeyNoFooter))
+	_ = viper.BindPFlag(KeyOpen, convertCmd.Flags().Lookup(KeyOpen))
+	_ = viper.BindPFlag(KeyPageBreak, convertCmd.Flags().Lookup(KeyPageBreak))
 
-	viper.SetDefault("format", "pdf")
-	viper.SetDefault("paper", "a4")
-	viper.SetDefault("engine", "auto")
-	viper.SetDefault("page-break", "none")
+	viper.SetDefault(KeyFormat, DefaultFormat)
+	viper.SetDefault(KeyPaper, DefaultPaper)
+	viper.SetDefault(KeyEngine, DefaultEngine)
+	viper.SetDefault(KeyPageBreak, DefaultPageBreak)
 }

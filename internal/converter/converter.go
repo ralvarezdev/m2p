@@ -21,11 +21,11 @@ func (f Format) String() string { return string(f) }
 
 func ParseFormat(s string) (Format, error) {
 	switch strings.ToLower(s) {
-	case "pdf":
+	case formatPDFStr:
 		return FormatPDF, nil
-	case "html":
+	case formatHTMLStr:
 		return FormatHTML, nil
-	case "both":
+	case formatBothStr:
 		return FormatBoth, nil
 	default:
 		return "", fmt.Errorf("unknown format %q: must be pdf, html, or both", s)
@@ -45,13 +45,13 @@ func (p Paper) String() string { return string(p) }
 
 func ParsePaper(s string) (Paper, error) {
 	switch strings.ToLower(s) {
-	case "a4":
+	case paperA4Str:
 		return PaperA4, nil
-	case "letter":
+	case paperLetterStr:
 		return PaperLetter, nil
-	case "a3":
+	case paperA3Str:
 		return PaperA3, nil
-	case "legal":
+	case paperLegalStr:
 		return PaperLegal, nil
 	default:
 		return "", fmt.Errorf("unknown paper size %q: must be a4, letter, a3, or legal", s)
@@ -73,11 +73,11 @@ type Options struct {
 // ParsePageBreak converts the --page-break flag value to a heading level int.
 func ParsePageBreak(s string) (int, error) {
 	switch strings.ToLower(s) {
-	case "none", "":
+	case pageBreakNoneStr, "":
 		return 0, nil
-	case "h2":
+	case pageBreakH2Str:
 		return 2, nil
-	case "h3":
+	case pageBreakH3Str:
 		return 3, nil
 	default:
 		return 0, fmt.Errorf("unknown page-break value %q: must be none, h2, or h3", s)
@@ -86,9 +86,9 @@ func ParsePageBreak(s string) (int, error) {
 
 // DefaultOutput returns the output path derived from input when not specified.
 func DefaultOutput(input string, format Format) string {
-	ext := ".pdf"
+	ext := ExtPDF
 	if format == FormatHTML {
-		ext = ".html"
+		ext = ExtHTML
 	}
 	base := strings.TrimSuffix(input, filepath.Ext(input))
 	return base + ext
@@ -102,7 +102,7 @@ func Convert(opts Options) error {
 	}
 
 	title := strings.TrimSuffix(filepath.Base(opts.Input), filepath.Ext(opts.Input))
-	date := time.Now().Format("2006-01-02")
+	date := time.Now().Format(DateFormat)
 
 	switch opts.Format {
 	case FormatHTML:
@@ -131,12 +131,12 @@ func convertHTML(src []byte, opts Options, title, date string) error {
 	if err != nil {
 		return fmt.Errorf("render template: %w", err)
 	}
-	htmlOut := strings.TrimSuffix(opts.Output, filepath.Ext(opts.Output)) + ".html"
+	htmlOut := strings.TrimSuffix(opts.Output, filepath.Ext(opts.Output)) + ExtHTML
 	return writeFile(htmlOut, htmlBytes)
 }
 
 func convertPDF(src []byte, opts Options, title, date string) error {
-	pdfOut := strings.TrimSuffix(opts.Output, filepath.Ext(opts.Output)) + ".pdf"
+	pdfOut := strings.TrimSuffix(opts.Output, filepath.Ext(opts.Output)) + ExtPDF
 
 	renderer := NewRenderer(opts.Engine)
 	return renderer.Render(context.Background(), RenderInput{
@@ -151,8 +151,8 @@ func convertPDF(src []byte, opts Options, title, date string) error {
 }
 
 func writeFile(path string, data []byte) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), DirPerm); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
-	return os.WriteFile(path, data, 0o644)
+	return os.WriteFile(path, data, FilePerm)
 }

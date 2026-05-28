@@ -9,12 +9,12 @@ import (
 func openFile(path string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
-	case "windows":
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", path)
-	case "darwin":
-		cmd = exec.Command("open", path)
+	case OSWindows:
+		cmd = exec.Command(OpenCmdWindows, OpenArgWindows, path)
+	case OSDarwin:
+		cmd = exec.Command(OpenCmdDarwin, path)
 	default:
-		cmd = exec.Command("xdg-open", path)
+		cmd = exec.Command(OpenCmdLinux, path)
 	}
 	return cmd.Start()
 }

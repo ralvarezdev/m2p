@@ -17,7 +17,7 @@ var configShowCmd = &cobra.Command{
 	Short: "Show resolved configuration and value sources",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		keys := []string{"paper", "format", "no-footer", "open", "quiet"}
+		keys := []string{KeyPaper, KeyFormat, KeyNoFooter, KeyOpen, KeyQuiet}
 
 		cfgFile := viper.ConfigFileUsed()
 		if cfgFile == "" {

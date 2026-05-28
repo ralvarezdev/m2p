@@ -36,3 +36,9 @@ go.work.sum
 
 # Internal docs
 docs/internal/
+
+# Generated files
+dist/
+
+# Test data
+testdata/
