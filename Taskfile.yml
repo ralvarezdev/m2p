@@ -1,0 +1,68 @@
+version: '3'
+
+vars:
+  BINARY: dist/m2p
+  MODULE: github.com/ralvarez/m2p
+
+tasks:
+  build:
+    desc: Build the m2p binary into dist/
+    cmds:
+      - go build -o {{.BINARY}}{{exeExt}} ./cmd/m2p
+
+  install:
+    desc: Install m2p to $GOPATH/bin
+    cmds:
+      - go install ./cmd/m2p
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  snapshot:
+    desc: Build a local goreleaser snapshot (all platforms)
+    cmds:
+      - goreleaser release --snapshot --clean
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -rf dist/
+
+  tidy:
+    desc: Tidy go.mod and go.sum
+    cmds:
+      - go mod tidy
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  test:convert:
+    desc: "Build and convert testdata/sample.md (e.g. task test:convert ENGINE=native)"
+    deps: [build]
+    vars:
+      ENGINE: '{{.ENGINE | default "auto"}}'
+    cmds:
+      - "{{.BINARY}}{{exeExt}} convert testdata/sample.md -o dist/sample.pdf --engine {{.ENGINE}}"
+
+  tag:
+    desc: "Tag and push a release — triggers the Release workflow (e.g. task tag VERSION=0.1.0)"
+    requires:
+      vars: [VERSION]
+    vars:
+      TAG: v{{.VERSION}}
+    cmds:
+      - platforms: [windows]
+        cmd: pwsh -NoProfile -Command "if ('{{.VERSION}}' -notmatch '^\d+\.\d+\.\d+$') { Write-Error 'Invalid version {{.VERSION}} — expected X.Y.Z'; exit 1 }"
+      - platforms: [linux, darwin]
+        cmd: echo '{{.VERSION}}' | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Invalid version {{.VERSION}} — expected X.Y.Z"; exit 1; }
+      - git tag {{.TAG}}
+      - git push origin {{.TAG}}
