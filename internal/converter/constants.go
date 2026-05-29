@@ -7,7 +7,7 @@ const (
 	ExtHTML     = ".html"
 )
 
-// Date format for document metadata
+// DateFormat is the date format for document metadata
 const DateFormat = "2006-01-02"
 
 // File permission constants
@@ -73,13 +73,13 @@ const (
 type CodeBlockDimension float64
 
 const (
-	CodeBlockLineHeight CodeBlockDimension = 4.5  // Height per line in code box
-	CodeBlockPaddingX   CodeBlockDimension = 16   // Horizontal padding
-	CodeBlockPaddingY   CodeBlockDimension = 10   // Vertical padding
-	CodeBlockHeaderH    CodeBlockDimension = 4    // Decorative header height
-	CodeBlockHeaderW    CodeBlockDimension = 18   // Decorative header width
-	CodeBlockMarginR    CodeBlockDimension = 20   // Right margin for header
-	CodeBlockMarginT    CodeBlockDimension = 2    // Top margin for header
+	CodeBlockLineHeight CodeBlockDimension = 4.5 // Height per line in code box
+	CodeBlockPaddingX   CodeBlockDimension = 16  // Horizontal padding
+	CodeBlockPaddingY   CodeBlockDimension = 10  // Vertical padding
+	CodeBlockHeaderH    CodeBlockDimension = 4   // Decorative header height
+	CodeBlockHeaderW    CodeBlockDimension = 18  // Decorative header width
+	CodeBlockMarginR    CodeBlockDimension = 20  // Right margin for header
+	CodeBlockMarginT    CodeBlockDimension = 2   // Top margin for header
 )
 
 // HighlightColor represents RGB component values for syntax highlighting fallback.

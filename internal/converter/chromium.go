@@ -12,38 +12,46 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-// chromePaths lists candidate Chrome/Chromium executables per OS, in order of preference.
-var chromePaths = map[string][]string{
-	"windows": {
-		`C:\Program Files\Google\Chrome\Application\chrome.exe`,
-		`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
-		filepath.Join(os.Getenv("LOCALAPPDATA"), `Google\Chrome\Application\chrome.exe`),
-		`C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe`,
-		filepath.Join(os.Getenv("LOCALAPPDATA"), `BraveSoftware\Brave-Browser\Application\brave.exe`),
-		`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`,
-		`C:\Program Files\Microsoft\Edge\Application\msedge.exe`,
-		`C:\Program Files\Chromium\Application\chrome.exe`,
-	},
-	"darwin": {
-		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-		"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-		"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-		"/Applications/Chromium.app/Contents/MacOS/Chromium",
-	},
-	"linux": {
-		"google-chrome",
-		"google-chrome-stable",
-		"brave-browser",
-		"microsoft-edge",
-		"chromium",
-		"chromium-browser",
-	},
+// chromeCandidates returns the ordered list of Chrome/Chromium executable paths
+// for the current OS. Evaluated at call time so LOCALAPPDATA is read after
+// program startup rather than at package init.
+func chromeCandidates() []string {
+	switch runtime.GOOS {
+	case "windows":
+		local := os.Getenv("LOCALAPPDATA")
+		return []string{
+			`C:\Program Files\Google\Chrome\Application\chrome.exe`,
+			`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
+			filepath.Join(local, "Google", "Chrome", "Application", "chrome.exe"),
+			`C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe`,
+			filepath.Join(local, "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+			`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`,
+			`C:\Program Files\Microsoft\Edge\Application\msedge.exe`,
+			`C:\Program Files\Chromium\Application\chrome.exe`,
+		}
+	case "darwin":
+		return []string{
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+			"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+		}
+	default:
+		return []string{
+			"google-chrome",
+			"google-chrome-stable",
+			"brave-browser",
+			"microsoft-edge",
+			"chromium",
+			"chromium-browser",
+		}
+	}
 }
 
 // findChrome returns the path to a usable Chrome/Chromium browser, or an error
 // with install instructions when none is found.
 func findChrome() (string, error) {
-	candidates := chromePaths[runtime.GOOS]
+	candidates := chromeCandidates()
 	for _, c := range candidates {
 		if filepath.IsAbs(c) {
 			if _, err := os.Stat(c); err == nil {
@@ -107,7 +115,7 @@ func (r *chromiumRenderer) Render(ctx context.Context, in RenderInput) error {
 	return renderWithChrome(ctx, chromeBin, htmlBytes, in.Output, in.Paper)
 }
 
-func renderWithChrome(_ context.Context, chromeBin string, htmlBytes []byte, output string, paper Paper) error {
+func renderWithChrome(ctx context.Context, chromeBin string, htmlBytes []byte, output string, paper Paper) error {
 	if _, ok := PaperSizes[paper]; !ok {
 		return fmt.Errorf("unknown paper size: %s", paper)
 	}
@@ -128,7 +136,7 @@ func renderWithChrome(_ context.Context, chromeBin string, htmlBytes []byte, out
 	tmpURL := "file:///" + filepath.ToSlash(tmp.Name())
 
 	allocCtx, cancelAlloc := chromedp.NewExecAllocator(
-		context.Background(),
+		ctx,
 		append(chromedp.DefaultExecAllocatorOptions[:],
 			chromedp.ExecPath(chromeBin),
 		)...,
@@ -158,8 +166,8 @@ func renderWithChrome(_ context.Context, chromeBin string, htmlBytes []byte, out
 		return fmt.Errorf("chromedp: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(output), DirPerm); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
-	return os.WriteFile(output, pdfData, 0o644)
+	return os.WriteFile(output, pdfData, FilePerm)
 }

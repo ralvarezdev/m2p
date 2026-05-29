@@ -57,7 +57,7 @@ func (r *nativeRenderer) Render(_ context.Context, in RenderInput) error {
 		return fmt.Errorf("ast walk: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(in.Output), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(in.Output), DirPerm); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
 	return pdf.OutputFileAndClose(in.Output)
@@ -86,11 +86,11 @@ func nativeMDParser() parser.Parser {
 type nativeWriter struct {
 	pdf             *fpdf.Fpdf
 	src             []byte
-	listDepth       int
 	listOrdered     []bool
 	listCounters    []int
-	pageBreakLevel  int // 0 = disabled, 2 = h2, 3 = h3
-	breakLevelCount int // headings seen at pageBreakLevel; first is never preceded by a break
+	pageBreakLevel  int
+	breakLevelCount int
+	listDepth       int
 }
 
 // inlineRun holds a segment of inline text with its formatting state.
@@ -105,16 +105,14 @@ type inlineRun struct {
 type rgbColor struct{ r, g, b int }
 
 var (
-	nColFG      = rgbColor{26, 28, 46}
-	nColMuted   = rgbColor{74, 80, 120}
-	nColFaint   = rgbColor{142, 148, 181}
-	nColBorder  = rgbColor{200, 202, 214}
-	nColH1Line  = rgbColor{122, 162, 247}
-	nColAccent2 = rgbColor{90, 74, 140}
-	nColCodeBG  = rgbColor{26, 28, 46}
-	nColCodeFG  = rgbColor{220, 230, 255}
-	nColCodeDot = rgbColor{58, 63, 98}
-	nColInlineFG = rgbColor{19, 104, 119}
+	nColFG       = rgbColor{26, 28, 46}
+	nColMuted    = rgbColor{74, 80, 120}
+	nColFaint    = rgbColor{142, 148, 181}
+	nColBorder   = rgbColor{200, 202, 214}
+	nColH1Line   = rgbColor{122, 162, 247}
+	nColAccent2  = rgbColor{90, 74, 140}
+	nColCodeBG   = rgbColor{26, 28, 46}
+	nColCodeDot  = rgbColor{58, 63, 98}
 	nColQuoteBG  = rgbColor{245, 242, 252}
 	nColQuoteBdr = rgbColor{187, 154, 247}
 )
@@ -261,11 +259,11 @@ func (w *nativeWriter) renderParagraph(node *ast.Paragraph) {
 	lineW := pw - lm - rm
 
 	runs := w.buildRuns(node, false, false, false)
-	text := runsToString(runs)
+	textContent := runsToString(runs)
 
 	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
-	w.pdf.MultiCell(lineW, 5.5, text, "", "L", false)
+	w.pdf.MultiCell(lineW, 5.5, textContent, "", "L", false)
 	w.pdf.Ln(3)
 }
 
@@ -571,4 +569,3 @@ func runsToString(runs []inlineRun) string {
 	}
 	return sb.String()
 }
-

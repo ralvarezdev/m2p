@@ -66,7 +66,6 @@ type Options struct {
 	Paper          Paper
 	Engine         Engine
 	ShowFooter     bool
-	Open           bool
 	PageBreakLevel int // 0 = none, 2 = h2, 3 = h3
 }
 

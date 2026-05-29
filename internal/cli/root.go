@@ -47,6 +47,9 @@ func init() {
 
 	rootCmd.PersistentFlags().String("config", "", "config file path (default: ~/.config/m2p/config.toml)")
 	rootCmd.PersistentFlags().BoolP(KeyQuiet, "q", false, "suppress progress output")
+	_ = viper.BindPFlag(KeyQuiet, rootCmd.PersistentFlags().Lookup(KeyQuiet))
+
+	rootCmd.CompletionOptions.HiddenDefaultCmd = false
 
 	rootCmd.AddCommand(convertCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -89,10 +92,6 @@ func xdgConfigDir() string {
 }
 
 func quietMode() bool {
-	q, _ := rootCmd.PersistentFlags().GetBool(KeyQuiet)
-	if q {
-		return true
-	}
 	return viper.GetBool(KeyQuiet)
 }
 

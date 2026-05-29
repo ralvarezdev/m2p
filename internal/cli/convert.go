@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ralvarez/m2p/internal/converter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/ralvarez/m2p/internal/converter"
 )
 
 var convertCmd = &cobra.Command{
@@ -37,40 +38,24 @@ Examples:
 			return fmt.Errorf("input not found: %s", input)
 		}
 
-		formatStr := viper.GetString(KeyFormat)
-		if v, _ := cmd.Flags().GetString(KeyFormat); v != "" {
-			formatStr = v
-		}
-		format, err := converter.ParseFormat(formatStr)
+		format, err := converter.ParseFormat(viper.GetString(KeyFormat))
 		if err != nil {
 			return err
 		}
 
-		paperStr := viper.GetString(KeyPaper)
-		if v, _ := cmd.Flags().GetString(KeyPaper); v != "" {
-			paperStr = v
-		}
-		paper, err := converter.ParsePaper(paperStr)
+		paper, err := converter.ParsePaper(viper.GetString(KeyPaper))
 		if err != nil {
 			return err
 		}
 
-		engineStr := viper.GetString(KeyEngine)
-		if v, _ := cmd.Flags().GetString(KeyEngine); v != "" {
-			engineStr = v
-		}
-		engine, err := converter.ParseEngine(engineStr)
+		engine, err := converter.ParseEngine(viper.GetString(KeyEngine))
 		if err != nil {
 			return err
 		}
 
-		noFooter, _ := cmd.Flags().GetBool(KeyNoFooter)
+		noFooter := viper.GetBool(KeyNoFooter)
 
-		pageBreakStr := viper.GetString(KeyPageBreak)
-		if v, _ := cmd.Flags().GetString(KeyPageBreak); v != "" {
-			pageBreakStr = v
-		}
-		pageBreakLevel, err := converter.ParsePageBreak(pageBreakStr)
+		pageBreakLevel, err := converter.ParsePageBreak(viper.GetString(KeyPageBreak))
 		if err != nil {
 			return err
 		}
@@ -83,7 +68,7 @@ Examples:
 			return fmt.Errorf("input must be a %s file, got: %s", converter.ExtMarkdown, filepath.Ext(input))
 		}
 
-		openAfter, _ := cmd.Flags().GetBool(KeyOpen)
+		openAfter := viper.GetBool(KeyOpen)
 		output, _ := cmd.Flags().GetString("output")
 		if output == "" {
 			output = converter.DefaultOutput(input, format)
@@ -98,7 +83,6 @@ Examples:
 			Paper:          paper,
 			Engine:         engine,
 			ShowFooter:     !noFooter,
-			Open:           openAfter,
 			PageBreakLevel: pageBreakLevel,
 		}
 
@@ -115,7 +99,14 @@ Examples:
 	},
 }
 
-func runBatch(dir string, format converter.Format, paper converter.Paper, engine converter.Engine, noFooter bool, pageBreakLevel int) error {
+func runBatch(
+	dir string,
+	format converter.Format,
+	paper converter.Paper,
+	engine converter.Engine,
+	noFooter bool,
+	pageBreakLevel int,
+) error {
 	var files []string
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {

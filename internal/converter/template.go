@@ -10,12 +10,12 @@ import (
 )
 
 type templateData struct {
-	Title          string
 	Body           template.HTML
-	Date           string
-	ShowFooter     bool
-	PageBreakLevel int
 	CSS            template.CSS
+	Title          string
+	Date           string
+	PageBreakLevel int
+	ShowFooter     bool
 }
 
 var (

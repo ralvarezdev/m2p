@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -17,14 +18,27 @@ var configShowCmd = &cobra.Command{
 	Short: "Show resolved configuration and value sources",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		keys := []string{KeyPaper, KeyFormat, KeyNoFooter, KeyOpen, KeyQuiet}
+		keys := []string{KeyPaper, KeyFormat, KeyEngine, KeyPageBreak, KeyNoFooter, KeyOpen, KeyQuiet}
 
 		cfgFile := viper.ConfigFileUsed()
 		if cfgFile == "" {
 			cfgFile = "(none)"
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "config file: %s\n\n", cfgFile)
 
+		outputFmt, _ := cmd.Flags().GetString("output")
+
+		if outputFmt == "json" {
+			m := make(map[string]any, len(keys)+1)
+			m["config_file"] = cfgFile
+			for _, k := range keys {
+				m[k] = viper.Get(k)
+			}
+			enc := json.NewEncoder(cmd.OutOrStdout())
+			enc.SetIndent("", "  ")
+			return enc.Encode(m)
+		}
+
+		fmt.Fprintf(cmd.OutOrStdout(), "config file: %s\n\n", cfgFile)
 		for _, k := range keys {
 			fmt.Fprintf(cmd.OutOrStdout(), "  %-12s = %v\n", k, viper.Get(k))
 		}
@@ -33,5 +47,6 @@ var configShowCmd = &cobra.Command{
 }
 
 func init() {
+	configShowCmd.Flags().StringP("output", "o", "text", "output format: text, json")
 	configCmd.AddCommand(configShowCmd)
 }

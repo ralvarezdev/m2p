@@ -44,23 +44,23 @@ func init() {
 
 		// Names
 		chroma.Name:                 "#c0caf5",
-		chroma.NameAttribute:        "#7aa2f7",           // struct tags / HTML attrs — blue
-		chroma.NameBuiltin:          "#7dcfff",           // built-in functions — cyan
+		chroma.NameAttribute:        "#7aa2f7", // struct tags / HTML attrs — blue
+		chroma.NameBuiltin:          "#7dcfff", // built-in functions — cyan
 		chroma.NameBuiltinPseudo:    "#c0caf5",
-		chroma.NameClass:            "#7dcfff",           // type / class names — cyan
-		chroma.NameConstant:         "#ff9e64",           // named constants — orange
+		chroma.NameClass:            "#7dcfff", // type / class names — cyan
+		chroma.NameConstant:         "#ff9e64", // named constants — orange
 		chroma.NameDecorator:        "#7aa2f7",
 		chroma.NameEntity:           "#c0caf5",
 		chroma.NameException:        "#7dcfff",
-		chroma.NameFunction:         "#7aa2f7",           // function names — blue
+		chroma.NameFunction:         "#7aa2f7", // function names — blue
 		chroma.NameLabel:            "#7dcfff italic",
 		chroma.NameNamespace:        "#c0caf5",
 		chroma.NameOther:            "#c0caf5",
 		chroma.NameTag:              "#bb9af7",
-		chroma.NameVariable:         "#c0caf5",           // local variables — neutral fg
+		chroma.NameVariable:         "#c0caf5", // local variables — neutral fg
 		chroma.NameVariableClass:    "#7dcfff",
 		chroma.NameVariableGlobal:   "#c0caf5",
-		chroma.NameVariableInstance: "#e0af68",           // instance fields — warm yellow
+		chroma.NameVariableInstance: "#e0af68", // instance fields — warm yellow
 
 		// Literals
 		chroma.Literal:     "#c0caf5",
@@ -127,11 +127,11 @@ func tokenize(lang, src string) ([]chroma.Token, error) {
 	}
 	lexer = chroma.Coalesce(lexer)
 
-	iter, err := lexer.Tokenise(nil, src)
-	if err != nil {
-		return []chroma.Token{{Type: chroma.Text, Value: src}}, nil
+	iter, _ := lexer.Tokenise(nil, src)
+	if iter != nil {
+		return iter.Tokens(), nil
 	}
-	return iter.Tokens(), nil
+	return []chroma.Token{{Type: chroma.Text, Value: src}}, nil
 }
 
 // tokenRGB returns the foreground RGB for a chroma token type using highlightTheme.
@@ -151,7 +151,7 @@ func tokenRGB(t chroma.TokenType) (r, g, b uint8) {
 // on \n within token values.
 func splitTokensByLine(tokens []chroma.Token) [][]chroma.Token {
 	var lines [][]chroma.Token
-	current := []chroma.Token{}
+	var current []chroma.Token
 
 	for _, tok := range tokens {
 		parts := strings.Split(tok.Value, "\n")
