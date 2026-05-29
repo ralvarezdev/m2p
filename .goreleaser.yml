@@ -56,9 +56,6 @@ changelog:
       order: 999
 
 release:
-  github:
-    owner: ralvarez
-    name: m2p
   draft: false
   prerelease: auto
   name_template: "v{{.Version}}"
