@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,9 +13,10 @@ import (
 )
 
 var convertCmd = &cobra.Command{
-	Use:   "convert <input.md>",
-	Short: "Convert a Markdown file to PDF (or HTML)",
+	Use:   "convert <input.md|dir>",
+	Short: "Convert a Markdown file (or folder) to PDF (or HTML)",
 	Long: `Convert a Markdown file to a styled PDF document.
+Pass a directory to batch-convert all .md files found inside it.
 
 The output file defaults to the input filename with a .pdf extension.
 Use --format html to produce a standalone HTML file instead, or
@@ -24,17 +26,15 @@ Examples:
   m2p convert README.md
   m2p convert README.md -o out/readme.pdf
   m2p convert README.md --format html
-  m2p convert README.md --format both --paper letter`,
+  m2p convert README.md --format both --paper letter
+  m2p convert ./docs/`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		input := args[0]
 
-		if !strings.EqualFold(filepath.Ext(input), converter.ExtMarkdown) {
-			return fmt.Errorf("input must be a %s file, got: %s", converter.ExtMarkdown, filepath.Ext(input))
-		}
-
-		if _, err := os.Stat(input); err != nil {
-			return fmt.Errorf("input file not found: %s", input)
+		fi, err := os.Stat(input)
+		if err != nil {
+			return fmt.Errorf("input not found: %s", input)
 		}
 
 		formatStr := viper.GetString(KeyFormat)
@@ -55,11 +55,6 @@ Examples:
 			return err
 		}
 
-		output, _ := cmd.Flags().GetString("output")
-		if output == "" {
-			output = converter.DefaultOutput(input, format)
-		}
-
 		engineStr := viper.GetString(KeyEngine)
 		if v, _ := cmd.Flags().GetString(KeyEngine); v != "" {
 			engineStr = v
@@ -70,7 +65,6 @@ Examples:
 		}
 
 		noFooter, _ := cmd.Flags().GetBool(KeyNoFooter)
-		openAfter, _ := cmd.Flags().GetBool(KeyOpen)
 
 		pageBreakStr := viper.GetString(KeyPageBreak)
 		if v, _ := cmd.Flags().GetString(KeyPageBreak); v != "" {
@@ -79,6 +73,20 @@ Examples:
 		pageBreakLevel, err := converter.ParsePageBreak(pageBreakStr)
 		if err != nil {
 			return err
+		}
+
+		if fi.IsDir() {
+			return runBatch(input, format, paper, engine, noFooter, pageBreakLevel)
+		}
+
+		if !strings.EqualFold(filepath.Ext(input), converter.ExtMarkdown) {
+			return fmt.Errorf("input must be a %s file, got: %s", converter.ExtMarkdown, filepath.Ext(input))
+		}
+
+		openAfter, _ := cmd.Flags().GetBool(KeyOpen)
+		output, _ := cmd.Flags().GetString("output")
+		if output == "" {
+			output = converter.DefaultOutput(input, format)
 		}
 
 		infof("converting %s → %s [%s, %s, engine:%s]", input, output, format, paper, engine)
@@ -105,6 +113,45 @@ Examples:
 		}
 		return nil
 	},
+}
+
+func runBatch(dir string, format converter.Format, paper converter.Paper, engine converter.Engine, noFooter bool, pageBreakLevel int) error {
+	var files []string
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.EqualFold(filepath.Ext(path), converter.ExtMarkdown) {
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("walk directory: %w", err)
+	}
+	if len(files) == 0 {
+		return fmt.Errorf("no .md files found in %s", dir)
+	}
+
+	infof("found %d .md file(s) in %s", len(files), dir)
+	for _, f := range files {
+		output := converter.DefaultOutput(f, format)
+		infof("converting %s → %s", f, output)
+		opts := converter.Options{
+			Input:          f,
+			Output:         output,
+			Format:         format,
+			Paper:          paper,
+			Engine:         engine,
+			ShowFooter:     !noFooter,
+			PageBreakLevel: pageBreakLevel,
+		}
+		if err := converter.Convert(opts); err != nil {
+			return fmt.Errorf("%s: %w", f, err)
+		}
+		infof("done → %s", output)
+	}
+	return nil
 }
 
 func init() {
