@@ -16,6 +16,81 @@ const (
 	FilePerm = 0o644
 )
 
+// PaperDimensions defines width, height, and margins for a paper type.
+type PaperDimensions struct {
+	WidthInches  float64
+	HeightInches float64
+	MarginInches float64
+}
+
+// PaperSizes maps each paper type to its dimensions (in inches for chromium, mm for native).
+var PaperSizes = map[Paper]PaperDimensions{
+	PaperA4: {
+		WidthInches:  8.27,
+		HeightInches: 11.69,
+		MarginInches: 0.6,
+	},
+	PaperLetter: {
+		WidthInches:  8.5,
+		HeightInches: 11,
+		MarginInches: 0.6,
+	},
+	PaperA3: {
+		WidthInches:  11.69,
+		HeightInches: 16.54,
+		MarginInches: 0.6,
+	},
+	PaperLegal: {
+		WidthInches:  8.5,
+		HeightInches: 14,
+		MarginInches: 0.6,
+	},
+}
+
+// NativeMargin represents PDF margins in millimeters for the native renderer.
+type NativeMargin int
+
+const (
+	NativeMarginDefault NativeMargin = 20 // Top, left, right margins
+	NativeMarginFooter  NativeMargin = 30 // Bottom margin when footer is shown
+)
+
+// TypographySize represents font sizes in points for document elements.
+type TypographySize int
+
+const (
+	TypoH1   TypographySize = 26 // Title/document heading
+	TypoH2   TypographySize = 22 // H2 heading
+	TypoH3   TypographySize = 16 // H3 heading
+	TypoH4   TypographySize = 14 // H4 heading
+	TypoH5   TypographySize = 12 // H5 heading
+	TypoH6   TypographySize = 11 // H6 heading
+	TypoBody TypographySize = 11 // Body text / default
+	TypoCode TypographySize = 10 // Code blocks & blockquotes
+)
+
+// CodeBlockDimension represents layout measurements for code blocks and blockquotes.
+type CodeBlockDimension float64
+
+const (
+	CodeBlockLineHeight CodeBlockDimension = 4.5  // Height per line in code box
+	CodeBlockPaddingX   CodeBlockDimension = 16   // Horizontal padding
+	CodeBlockPaddingY   CodeBlockDimension = 10   // Vertical padding
+	CodeBlockHeaderH    CodeBlockDimension = 4    // Decorative header height
+	CodeBlockHeaderW    CodeBlockDimension = 18   // Decorative header width
+	CodeBlockMarginR    CodeBlockDimension = 20   // Right margin for header
+	CodeBlockMarginT    CodeBlockDimension = 2    // Top margin for header
+)
+
+// HighlightColor represents RGB component values for syntax highlighting fallback.
+type HighlightColor uint8
+
+const (
+	HighlightColorR HighlightColor = 192 // Red component (#c0caf5)
+	HighlightColorG HighlightColor = 202 // Green component (#c0caf5)
+	HighlightColorB HighlightColor = 245 // Blue component (#c0caf5)
+)
+
 // String representations of typed constants for parsing
 const (
 	formatPDFStr  = "pdf"

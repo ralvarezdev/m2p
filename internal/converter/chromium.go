@@ -61,43 +61,17 @@ func findChrome() (string, error) {
 }
 
 // paperParams maps paper size names to chromedp print params (dimensions in inches).
-var paperParams = map[Paper]page.PrintToPDFParams{
-	PaperA4: {
+func getPaperParams(p Paper) page.PrintToPDFParams {
+	dims := PaperSizes[p]
+	return page.PrintToPDFParams{
 		PrintBackground: true,
-		PaperWidth:      8.27,
-		PaperHeight:     11.69,
-		MarginTop:       0.6,
-		MarginBottom:    0.6,
-		MarginLeft:      0.6,
-		MarginRight:     0.6,
-	},
-	PaperLetter: {
-		PrintBackground: true,
-		PaperWidth:      8.5,
-		PaperHeight:     11,
-		MarginTop:       0.6,
-		MarginBottom:    0.6,
-		MarginLeft:      0.6,
-		MarginRight:     0.6,
-	},
-	PaperA3: {
-		PrintBackground: true,
-		PaperWidth:      11.69,
-		PaperHeight:     16.54,
-		MarginTop:       0.6,
-		MarginBottom:    0.6,
-		MarginLeft:      0.6,
-		MarginRight:     0.6,
-	},
-	PaperLegal: {
-		PrintBackground: true,
-		PaperWidth:      8.5,
-		PaperHeight:     14,
-		MarginTop:       0.6,
-		MarginBottom:    0.6,
-		MarginLeft:      0.6,
-		MarginRight:     0.6,
-	},
+		PaperWidth:      dims.WidthInches,
+		PaperHeight:     dims.HeightInches,
+		MarginTop:       dims.MarginInches,
+		MarginBottom:    dims.MarginInches,
+		MarginLeft:      dims.MarginInches,
+		MarginRight:     dims.MarginInches,
+	}
 }
 
 type chromiumRenderer struct {
@@ -134,10 +108,10 @@ func (r *chromiumRenderer) Render(ctx context.Context, in RenderInput) error {
 }
 
 func renderWithChrome(_ context.Context, chromeBin string, htmlBytes []byte, output string, paper Paper) error {
-	params, ok := paperParams[paper]
-	if !ok {
+	if _, ok := PaperSizes[paper]; !ok {
 		return fmt.Errorf("unknown paper size: %s", paper)
 	}
+	params := getPaperParams(paper)
 
 	tmp, err := os.CreateTemp("", "m2p-*.html")
 	if err != nil {

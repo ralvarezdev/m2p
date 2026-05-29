@@ -26,13 +26,12 @@ type nativeRenderer struct{}
 func (r *nativeRenderer) Render(_ context.Context, in RenderInput) error {
 	p := nativePaperSize(in.Paper)
 	pdf := fpdf.New("P", "mm", p, "")
-	pdf.SetMargins(20, 20, 20)
+	margin := float64(NativeMarginDefault)
+	pdf.SetMargins(margin, margin, margin)
 
-	// Reserve extra bottom space when the footer is active so auto page breaks
-	// trigger before content flows under the footer band (~10 mm).
-	bottomBreakMargin := 20.0
+	bottomBreakMargin := float64(NativeMarginDefault)
 	if in.ShowFooter {
-		bottomBreakMargin = 30.0
+		bottomBreakMargin = float64(NativeMarginFooter)
 	}
 	pdf.SetAutoPageBreak(true, bottomBreakMargin)
 
@@ -84,8 +83,6 @@ func nativeMDParser() parser.Parser {
 	).Parser()
 }
 
-// ── State ──────────────────────────────────────────────────────────────────
-
 type nativeWriter struct {
 	pdf             *fpdf.Fpdf
 	src             []byte
@@ -125,11 +122,9 @@ var (
 func (w *nativeWriter) setColor(c rgbColor) { w.pdf.SetTextColor(c.r, c.g, c.b) }
 
 func (w *nativeWriter) initFonts() {
-	w.pdf.SetFont("Helvetica", "", 11)
+	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
 }
-
-// ── AST walker ────────────────────────────────────────────────────────────
 
 func (w *nativeWriter) walk(n ast.Node, entering bool) (ast.WalkStatus, error) {
 	switch node := n.(type) {
@@ -189,10 +184,8 @@ func (w *nativeWriter) walk(n ast.Node, entering bool) (ast.WalkStatus, error) {
 	return ast.WalkContinue, nil
 }
 
-// ── Block renderers ────────────────────────────────────────────────────────
-
 func (w *nativeWriter) drawTitle(title string) {
-	w.pdf.SetFont("Helvetica", "B", 26)
+	w.pdf.SetFont("Helvetica", "B", float64(TypoH1))
 	w.setColor(nColFG)
 	w.pdf.MultiCell(0, 10, title, "", "L", false)
 
@@ -222,7 +215,7 @@ func (w *nativeWriter) renderHeading(node *ast.Heading) {
 	switch node.Level {
 	case 1:
 		w.pdf.Ln(6)
-		w.pdf.SetFont("Helvetica", "B", 22)
+		w.pdf.SetFont("Helvetica", "B", float64(TypoH2))
 		w.setColor(nColFG)
 		w.pdf.MultiCell(0, 9, content, "", "L", false)
 		y := w.pdf.GetY()
@@ -238,27 +231,27 @@ func (w *nativeWriter) renderHeading(node *ast.Heading) {
 		w.pdf.SetFont("Courier", "", 9)
 		w.setColor(nColAccent2)
 		w.pdf.CellFormat(5, 7, "§", "", 0, "L", false, 0, "")
-		w.pdf.SetFont("Helvetica", "B", 16)
+		w.pdf.SetFont("Helvetica", "B", float64(TypoH3))
 		w.setColor(nColFG)
 		w.pdf.MultiCell(0, 7, content, "", "L", false)
 		w.pdf.Ln(2)
 
 	case 3:
 		w.pdf.Ln(6)
-		w.pdf.SetFont("Courier", "B", 10)
+		w.pdf.SetFont("Courier", "B", float64(TypoCode))
 		w.setColor(nColMuted)
 		w.pdf.MultiCell(0, 6, strings.ToUpper(content), "", "L", false)
 		w.pdf.Ln(2)
 
 	default:
 		w.pdf.Ln(4)
-		w.pdf.SetFont("Helvetica", "B", 11)
+		w.pdf.SetFont("Helvetica", "B", float64(TypoBody))
 		w.setColor(nColFG)
 		w.pdf.MultiCell(0, 6, content, "", "L", false)
 		w.pdf.Ln(1)
 	}
 
-	w.pdf.SetFont("Helvetica", "", 11)
+	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
 }
 
@@ -270,7 +263,7 @@ func (w *nativeWriter) renderParagraph(node *ast.Paragraph) {
 	runs := w.buildRuns(node, false, false, false)
 	text := runsToString(runs)
 
-	w.pdf.SetFont("Helvetica", "", 11)
+	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
 	w.pdf.MultiCell(lineW, 5.5, text, "", "L", false)
 	w.pdf.Ln(3)
@@ -306,7 +299,7 @@ func (w *nativeWriter) renderCodeBlock(node ast.Node) {
 	boxW := pw - lm - rm
 
 	const lineH = 4.5
-	boxH := float64(len(tokenLines))*lineH + 10
+	boxH := float64(len(tokenLines))*lineH + float64(CodeBlockPaddingY)
 
 	startX, startY := w.pdf.GetX(), w.pdf.GetY()
 
@@ -317,8 +310,8 @@ func (w *nativeWriter) renderCodeBlock(node ast.Node) {
 	// Decorative ● ● ●
 	w.pdf.SetFont("Courier", "", 6)
 	w.pdf.SetTextColor(nColCodeDot.r, nColCodeDot.g, nColCodeDot.b)
-	w.pdf.SetXY(startX+boxW-20, startY+2)
-	w.pdf.CellFormat(18, 4, "● ● ●", "", 0, "R", false, 0, "")
+	w.pdf.SetXY(startX+boxW-float64(CodeBlockMarginR), startY+float64(CodeBlockMarginT))
+	w.pdf.CellFormat(float64(CodeBlockHeaderW), float64(CodeBlockHeaderH), "● ● ●", "", 0, "R", false, 0, "")
 
 	// Render token by token, line by line.
 	w.pdf.SetFont("Courier", "", 9)
@@ -337,7 +330,7 @@ func (w *nativeWriter) renderCodeBlock(node ast.Node) {
 
 	w.pdf.SetXY(lm, startY+boxH)
 	w.pdf.Ln(5)
-	w.pdf.SetFont("Helvetica", "", 11)
+	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
 }
 
@@ -355,9 +348,9 @@ func (w *nativeWriter) renderBlockquote(node *ast.Blockquote) {
 	pw, _ := w.pdf.GetPageSize()
 	boxW := pw - lm - rm
 
-	w.pdf.SetFont("Helvetica", "I", 10)
-	splitLines := w.pdf.SplitLines([]byte(content), boxW-16)
-	boxH := float64(len(splitLines))*5.5 + 10
+	w.pdf.SetFont("Helvetica", "I", float64(TypoCode))
+	splitLines := w.pdf.SplitLines([]byte(content), boxW-float64(CodeBlockPaddingX))
+	boxH := float64(len(splitLines))*5.5 + float64(CodeBlockPaddingY)
 
 	x, y := w.pdf.GetX(), w.pdf.GetY()
 	w.pdf.SetFillColor(nColQuoteBG.r, nColQuoteBG.g, nColQuoteBG.b)
@@ -375,7 +368,7 @@ func (w *nativeWriter) renderBlockquote(node *ast.Blockquote) {
 
 	w.pdf.SetXY(lm, y+boxH)
 	w.pdf.Ln(4)
-	w.pdf.SetFont("Helvetica", "", 11)
+	w.pdf.SetFont("Helvetica", "", float64(TypoBody))
 	w.setColor(nColFG)
 }
 
@@ -515,8 +508,6 @@ func (w *nativeWriter) drawFooter(date string) {
 	w.pdf.SetFont("Helvetica", "", 11)
 	w.setColor(nColFG)
 }
-
-// ── Inline helpers ─────────────────────────────────────────────────────────
 
 // collectText flattens all inline text under a node into a plain string.
 func (w *nativeWriter) collectText(n ast.Node) string {

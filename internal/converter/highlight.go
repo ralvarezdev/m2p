@@ -139,12 +139,12 @@ func tokenize(lang, src string) ([]chroma.Token, error) {
 func tokenRGB(t chroma.TokenType) (r, g, b uint8) {
 	style := styles.Get(highlightTheme)
 	if style == nil {
-		return 192, 202, 245
+		return uint8(HighlightColorR), uint8(HighlightColorG), uint8(HighlightColorB)
 	}
 	if c := style.Get(t).Colour; c != 0 {
 		return c.Red(), c.Green(), c.Blue()
 	}
-	return 192, 202, 245
+	return uint8(HighlightColorR), uint8(HighlightColorG), uint8(HighlightColorB)
 }
 
 // splitTokensByLine groups a flat token list into per-line slices, splitting

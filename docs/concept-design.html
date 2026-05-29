@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    /* ── Design tokens ─────────────────────────────────── */
+    /* Design tokens */
     :root {
       --bg:        #04050d;
       --bg-s1:     #080b18;
@@ -42,10 +42,10 @@
       --doc-border-quote: #bb9af7;
     }
 
-    /* ── Reset ─────────────────────────────────────────── */
+    /* Reset */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── App shell ─────────────────────────────────────── */
+    /* App shell */
     html, body {
       height: 100%;
       overflow: hidden;
@@ -61,7 +61,6 @@
       height: 100vh;
     }
 
-    /* ── Header ────────────────────────────────────────── */
     header {
       display: flex;
       align-items: center;
@@ -73,6 +72,7 @@
       z-index: 20;
     }
 
+    /* Header */
     .brand {
       display: inline-flex;
       align-items: baseline;
@@ -160,7 +160,7 @@
     }
     .btn-export:active { transform: translateY(0); }
 
-    /* ── Panes ─────────────────────────────────────────── */
+    /* Panes */
     .panes {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -168,7 +168,7 @@
       min-height: 0;
     }
 
-    /* ── Editor pane ───────────────────────────────────── */
+    /* Editor pane */
     .editor-pane {
       display: flex;
       flex-direction: column;
@@ -222,7 +222,7 @@
     }
     .editor::placeholder { color: var(--fg-faint); }
 
-    /* ── Preview pane ──────────────────────────────────── */
+    /* Preview pane */
     .preview-pane {
       display: flex;
       flex-direction: column;
@@ -243,7 +243,7 @@
       scrollbar-color: #c8cad6 transparent;
     }
 
-    /* ── Document (screen) ─────────────────────────────── */
+    /* Document (screen) */
     .document {
       background: var(--doc-bg);
       border-radius: 3px;
@@ -254,7 +254,7 @@
       min-height: 960px; /* approx A4 ratio */
     }
 
-    /* ── Document typography ───────────────────────────── */
+    /* Document typography */
     .document h1 {
       font-family: var(--font-sans);
       font-size: 34px;
@@ -478,7 +478,6 @@
       50%       { transform: translateX(-6px); }
     }
 
-    /* ── Status bar ────────────────────────────────────── */
     .statusbar {
       display: flex;
       align-items: center;
@@ -509,7 +508,8 @@
       flex-shrink: 0;
     }
 
-    /* ── Print styles ──────────────────────────────────── */
+    /* Status bar */
+    /* Print styles */
     @media print {
       *, *::before, *::after {
         -webkit-print-color-adjust: exact !important;
@@ -585,7 +585,7 @@
 <body>
   <div class="app">
 
-    <!-- ── Header ── -->
+    <!-- Header -->
     <header>
       <div class="brand">
         <span class="bm-0x">0x</span><span class="bm-ra">RA</span><span class="bm-sep">·</span><span class="bm-tool">md→pdf</span>
@@ -602,7 +602,7 @@
       </div>
     </header>
 
-    <!-- ── Panes ── -->
+    <!-- Panes -->
     <div class="panes">
 
       <!-- Editor -->
@@ -630,7 +630,7 @@
 
     </div>
 
-    <!-- ── Status bar ── -->
+    <!-- Status bar -->
     <div class="statusbar">
       <div class="statusbar-left">
         <div class="status-item">
@@ -649,10 +649,10 @@
   </div>
 
   <script>
-    /* ── Marked config ─────────────────────────────────── */
+    /* Marked config */
     marked.setOptions({ breaks: true, gfm: true });
 
-    /* ── Sample document ───────────────────────────────── */
+    /* Sample document */
     const SAMPLE = `# rsk — skill registry for Claude Code
 
 A CLI tool that lets you cache, version, and share reusable AI skills across machines and teams. Ships as a single binary with no runtime dependencies.
@@ -712,7 +712,7 @@ func (c *Client) Push(skill *Skill) error {
 - \`team namespaces\` — planned
 `;
 
-    /* ── DOM refs ──────────────────────────────────────── */
+    /* DOM refs */
     const editor    = document.getElementById('editor');
     const preview   = document.getElementById('preview');
     const wordCount = document.getElementById('wordCount');
@@ -720,7 +720,7 @@ func (c *Client) Push(skill *Skill) error {
     const paperLabel = document.getElementById('paperLabel');
     const docName   = document.getElementById('docName');
 
-    /* ── Render ────────────────────────────────────────── */
+    /* Render */
     function render(md) {
       if (!md.trim()) {
         preview.innerHTML = `
@@ -750,7 +750,7 @@ func (c *Client) Push(skill *Skill) error {
       charCount.textContent = chars.toLocaleString();
     }
 
-    /* ── Paper size ────────────────────────────────────── */
+    /* Paper size */
     function updatePaper() {
       const val = document.getElementById('paperSize').value;
       if (val === 'a4') {
@@ -766,7 +766,7 @@ func (c *Client) Push(skill *Skill) error {
       ps.textContent = `@media print { @page { size: ${val === 'a4' ? 'A4' : 'letter'}; margin: 2.5cm 2.8cm 2.8cm; } }`;
     }
 
-    /* ── Export ────────────────────────────────────────── */
+    /* Export */
     function exportPDF() {
       const name = docName.value.trim() || 'document';
       document.title = name;
@@ -775,7 +775,7 @@ func (c *Client) Push(skill *Skill) error {
       setTimeout(() => { document.title = '0xRA · md→pdf'; }, 1000);
     }
 
-    /* ── Input handler ─────────────────────────────────── */
+    /* Input handler */
     function onEdit() {
       const md = editor.value;
       render(md);
@@ -783,7 +783,7 @@ func (c *Client) Push(skill *Skill) error {
       try { localStorage.setItem('ralvarez-mdpdf-content', md); } catch(e) {}
     }
 
-    /* ── Keyboard shortcuts ────────────────────────────── */
+    /* Keyboard shortcuts */
     document.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'e') {
         e.preventDefault();
@@ -791,7 +791,7 @@ func (c *Client) Push(skill *Skill) error {
       }
     });
 
-    /* ── Init ──────────────────────────────────────────── */
+    /* Init */
     (function init() {
       let saved;
       try { saved = localStorage.getItem('ralvarez-mdpdf-content'); } catch(e) {}
