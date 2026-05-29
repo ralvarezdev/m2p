@@ -1,4 +1,4 @@
-module github.com/ralvarez/m2p
+module github.com/ralvarezdev/m2p
 
 go 1.26.3
 

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/ralvarez/m2p/internal/converter"
+	"github.com/ralvarezdev/m2p/internal/converter"
 )
 
 var convertCmd = &cobra.Command{

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/ralvarez/m2p/internal/assets"
+	"github.com/ralvarezdev/m2p/internal/assets"
 )
 
 type templateData struct {

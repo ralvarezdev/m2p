@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ralvarez/m2p/internal/cli"
+	"github.com/ralvarezdev/m2p/internal/cli"
 )
 
 // Injected by goreleaser via -ldflags.

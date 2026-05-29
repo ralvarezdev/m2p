@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   BINARY: dist/m2p
-  MODULE: github.com/ralvarez/m2p
+  MODULE: github.com/ralvarezdev/m2p
 
 tasks:
   build:
