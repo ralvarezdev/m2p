@@ -3,6 +3,7 @@ package converter
 import (
 	"context"
 	"fmt"
+	"html"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,10 +69,12 @@ func findChrome() (string, error) {
 	)
 }
 
-// paperParams maps paper size names to chromedp print params (dimensions in inches).
-func getPaperParams(p Paper) page.PrintToPDFParams {
+// getPaperParams maps a paper size to chromedp print params. When showFooter is
+// true it activates Chrome's native footer template, which renders in the bottom
+// margin area and never overlaps body content.
+func getPaperParams(p Paper, showFooter bool, date string) page.PrintToPDFParams {
 	dims := PaperSizes[p]
-	return page.PrintToPDFParams{
+	params := page.PrintToPDFParams{
 		PrintBackground: true,
 		PaperWidth:      dims.WidthInches,
 		PaperHeight:     dims.HeightInches,
@@ -80,6 +83,28 @@ func getPaperParams(p Paper) page.PrintToPDFParams {
 		MarginLeft:      dims.MarginInches,
 		MarginRight:     dims.MarginInches,
 	}
+	if showFooter {
+		params.DisplayHeaderFooter = true
+		params.HeaderTemplate = ChromeHeaderPlaceholder
+		params.FooterTemplate = buildNativeFooterTemplate(date, dims.MarginInches)
+	}
+	return params
+}
+
+// buildNativeFooterTemplate returns the HTML injected into Chrome's bottom margin
+// on every page. Inline styles are required; CSS custom properties are unavailable.
+func buildNativeFooterTemplate(date string, marginInches float64) string {
+	paddingPx := marginInches * ScreenDPI
+	return fmt.Sprintf(
+		`<div style="font-family:%s;font-size:%dpx;color:%s;width:100%%;`+
+			`display:flex;justify-content:space-between;align-items:center;`+
+			`padding:0 %.1fpx;box-sizing:border-box;">`+
+			`<span>0x<span style="color:%s">RA</span>&nbsp;&middot;&nbsp;m2p</span>`+
+			`<span>%s</span>`+
+			`</div>`,
+		ChromeFooterFontFamily, ChromeFooterFontSizePx, ChromeFooterColorMuted, paddingPx,
+		ChromeFooterColorCyan, html.EscapeString(date),
+	)
 }
 
 type chromiumRenderer struct {
@@ -112,14 +137,17 @@ func (r *chromiumRenderer) Render(ctx context.Context, in RenderInput) error {
 		return fmt.Errorf("render template: %w", err)
 	}
 
-	return renderWithChrome(ctx, chromeBin, htmlBytes, in.Output, in.Paper)
+	return renderWithChrome(ctx, chromeBin, htmlBytes, in.Output, in.Paper, in.ShowFooter, in.Date)
 }
 
-func renderWithChrome(ctx context.Context, chromeBin string, htmlBytes []byte, output string, paper Paper) error {
+func renderWithChrome(
+	ctx context.Context, chromeBin string, htmlBytes []byte,
+	output string, paper Paper, showFooter bool, date string,
+) error {
 	if _, ok := PaperSizes[paper]; !ok {
 		return fmt.Errorf("unknown paper size: %s", paper)
 	}
-	params := getPaperParams(paper)
+	params := getPaperParams(paper, showFooter, date)
 
 	tmp, err := os.CreateTemp("", "m2p-*.html")
 	if err != nil {
@@ -159,6 +187,9 @@ func renderWithChrome(ctx context.Context, chromeBin string, htmlBytes []byte, o
 				WithMarginBottom(params.MarginBottom).
 				WithMarginLeft(params.MarginLeft).
 				WithMarginRight(params.MarginRight).
+				WithDisplayHeaderFooter(params.DisplayHeaderFooter).
+				WithHeaderTemplate(params.HeaderTemplate).
+				WithFooterTemplate(params.FooterTemplate).
 				Do(ctx)
 			return err
 		}),

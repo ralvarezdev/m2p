@@ -111,6 +111,23 @@ const (
 	pageBreakH3Str   = "h3"
 )
 
+// ScreenDPI is the CSS reference pixel density used to convert inch-based page
+// margins to CSS pixel offsets in the Chrome native footer template.
+const ScreenDPI = 96.0
+
+// ChromeHeaderPlaceholder is the empty header template required by Chrome when
+// DisplayHeaderFooter is true but no header content is desired.
+const ChromeHeaderPlaceholder = `<span></span>`
+
+// ChromeFooter* are inline-style constants for Chrome's native footer template.
+// CSS custom properties are unavailable in that rendering context.
+const (
+	ChromeFooterFontFamily = "monospace" // JetBrains Mono unavailable in Chrome's native footer context
+	ChromeFooterFontSizePx = 11          // matches --font-size-sm
+	ChromeFooterColorMuted = "#8e94b5"   // matches --doc-faint
+	ChromeFooterColorCyan  = "#7dcfff"   // matches --doc-ac-cyan
+)
+
 // Font CSS templates with base64 data URI placeholders
 const (
 	interFontTemplate = `@font-face {

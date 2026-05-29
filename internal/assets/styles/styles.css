@@ -311,8 +311,11 @@ html, body {
     max-width: none;
     box-shadow: none;
     border-radius: 0;
-    min-height: auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
+  .document { flex: 1; }
   .document h2, .document h3 { break-after: avoid; }
   .document pre { break-inside: avoid; }
   .document h1  { font-size: 28px; }
