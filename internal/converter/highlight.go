@@ -21,94 +21,94 @@ func init() {
 	//   Functions (NameFunction)   → blue        #7aa2f7
 	//   Keywords                   → purple      #bb9af7
 	styles.Register(chroma.MustNewStyle("tokyonight-dark", chroma.StyleEntries{
-		chroma.Background: "#c0caf5 bg:#1a1b2e",
-		chroma.Text:       "#c0caf5",
-		chroma.Other:      "#c0caf5",
+		chroma.Background: tokyoNightFg + " bg:#1a1b2e",
+		chroma.Text:       tokyoNightFg,
+		chroma.Other:      tokyoNightFg,
 
 		// Comments — muted blue-grey
-		chroma.Comment:          "#565f89",
-		chroma.CommentHashbang:  "#565f89",
-		chroma.CommentMultiline: "#565f89",
-		chroma.CommentSingle:    "#565f89",
-		chroma.CommentSpecial:   "#565f89",
-		chroma.CommentPreproc:   "#bb9af7",
+		chroma.Comment:          tokyoNightComment,
+		chroma.CommentHashbang:  tokyoNightComment,
+		chroma.CommentMultiline: tokyoNightComment,
+		chroma.CommentSingle:    tokyoNightComment,
+		chroma.CommentSpecial:   tokyoNightComment,
+		chroma.CommentPreproc:   tokyoNightPurple,
 
 		// Keywords — purple
-		chroma.Keyword:            "#bb9af7",
-		chroma.KeywordConstant:    "#bb9af7",
-		chroma.KeywordDeclaration: "#bb9af7",
-		chroma.KeywordNamespace:   "#bb9af7",
-		chroma.KeywordPseudo:      "#bb9af7",
-		chroma.KeywordReserved:    "#bb9af7",
-		chroma.KeywordType:        "#7dcfff", // primitive types (int, string…) — cyan
+		chroma.Keyword:            tokyoNightPurple,
+		chroma.KeywordConstant:    tokyoNightPurple,
+		chroma.KeywordDeclaration: tokyoNightPurple,
+		chroma.KeywordNamespace:   tokyoNightPurple,
+		chroma.KeywordPseudo:      tokyoNightPurple,
+		chroma.KeywordReserved:    tokyoNightPurple,
+		chroma.KeywordType:        ChromeFooterColorCyan, // primitive types (int, string…) — cyan
 
 		// Names
-		chroma.Name:                 "#c0caf5",
-		chroma.NameAttribute:        "#7aa2f7", // struct tags / HTML attrs — blue
-		chroma.NameBuiltin:          "#7dcfff", // built-in functions — cyan
-		chroma.NameBuiltinPseudo:    "#c0caf5",
-		chroma.NameClass:            "#7dcfff", // type / class names — cyan
-		chroma.NameConstant:         "#ff9e64", // named constants — orange
-		chroma.NameDecorator:        "#7aa2f7",
-		chroma.NameEntity:           "#c0caf5",
-		chroma.NameException:        "#7dcfff",
-		chroma.NameFunction:         "#7aa2f7", // function names — blue
-		chroma.NameLabel:            "#7dcfff italic",
-		chroma.NameNamespace:        "#c0caf5",
-		chroma.NameOther:            "#c0caf5",
-		chroma.NameTag:              "#bb9af7",
-		chroma.NameVariable:         "#c0caf5", // local variables — neutral fg
-		chroma.NameVariableClass:    "#7dcfff",
-		chroma.NameVariableGlobal:   "#c0caf5",
+		chroma.Name:                 tokyoNightFg,
+		chroma.NameAttribute:        tokyoNightBlue,        // struct tags / HTML attrs — blue
+		chroma.NameBuiltin:          ChromeFooterColorCyan, // built-in functions — cyan
+		chroma.NameBuiltinPseudo:    tokyoNightFg,
+		chroma.NameClass:            ChromeFooterColorCyan, // type / class names — cyan
+		chroma.NameConstant:         tokyoNightOrange,      // named constants — orange
+		chroma.NameDecorator:        tokyoNightBlue,
+		chroma.NameEntity:           tokyoNightFg,
+		chroma.NameException:        ChromeFooterColorCyan,
+		chroma.NameFunction:         tokyoNightBlue, // function names — blue
+		chroma.NameLabel:            ChromeFooterColorCyan + " italic",
+		chroma.NameNamespace:        tokyoNightFg,
+		chroma.NameOther:            tokyoNightFg,
+		chroma.NameTag:              tokyoNightPurple,
+		chroma.NameVariable:         tokyoNightFg, // local variables — neutral fg
+		chroma.NameVariableClass:    ChromeFooterColorCyan,
+		chroma.NameVariableGlobal:   tokyoNightFg,
 		chroma.NameVariableInstance: "#e0af68", // instance fields — warm yellow
 
 		// Literals
-		chroma.Literal:     "#c0caf5",
-		chroma.LiteralDate: "#9ece6a",
+		chroma.Literal:     tokyoNightFg,
+		chroma.LiteralDate: tokyoNightGreen,
 
 		// Strings — green
-		chroma.LiteralString:         "#9ece6a",
-		chroma.LiteralStringBacktick: "#9ece6a",
-		chroma.LiteralStringChar:     "#9ece6a",
-		chroma.LiteralStringDoc:      "#9ece6a",
-		chroma.LiteralStringDouble:   "#9ece6a",
-		chroma.LiteralStringEscape:   "#bb9af7", // escape sequences — purple
-		chroma.LiteralStringHeredoc:  "#9ece6a",
-		chroma.LiteralStringInterpol: "#9ece6a",
-		chroma.LiteralStringOther:    "#9ece6a",
-		chroma.LiteralStringRegex:    "#9ece6a",
-		chroma.LiteralStringSingle:   "#9ece6a",
-		chroma.LiteralStringSymbol:   "#9ece6a",
+		chroma.LiteralString:         tokyoNightGreen,
+		chroma.LiteralStringBacktick: tokyoNightGreen,
+		chroma.LiteralStringChar:     tokyoNightGreen,
+		chroma.LiteralStringDoc:      tokyoNightGreen,
+		chroma.LiteralStringDouble:   tokyoNightGreen,
+		chroma.LiteralStringEscape:   tokyoNightPurple, // escape sequences — purple
+		chroma.LiteralStringHeredoc:  tokyoNightGreen,
+		chroma.LiteralStringInterpol: tokyoNightGreen,
+		chroma.LiteralStringOther:    tokyoNightGreen,
+		chroma.LiteralStringRegex:    tokyoNightGreen,
+		chroma.LiteralStringSingle:   tokyoNightGreen,
+		chroma.LiteralStringSymbol:   tokyoNightGreen,
 
 		// Numbers — orange
-		chroma.LiteralNumber:            "#ff9e64",
-		chroma.LiteralNumberBin:         "#ff9e64",
-		chroma.LiteralNumberFloat:       "#ff9e64",
-		chroma.LiteralNumberHex:         "#ff9e64",
-		chroma.LiteralNumberInteger:     "#ff9e64",
-		chroma.LiteralNumberIntegerLong: "#ff9e64",
-		chroma.LiteralNumberOct:         "#ff9e64",
+		chroma.LiteralNumber:            tokyoNightOrange,
+		chroma.LiteralNumberBin:         tokyoNightOrange,
+		chroma.LiteralNumberFloat:       tokyoNightOrange,
+		chroma.LiteralNumberHex:         tokyoNightOrange,
+		chroma.LiteralNumberInteger:     tokyoNightOrange,
+		chroma.LiteralNumberIntegerLong: tokyoNightOrange,
+		chroma.LiteralNumberOct:         tokyoNightOrange,
 
 		// Operators & punctuation
-		chroma.Operator:     "#89ddff", // light cyan
-		chroma.OperatorWord: "#bb9af7", // word operators — purple
-		chroma.Punctuation:  "#c0caf5",
+		chroma.Operator:     "#89ddff",        // light cyan
+		chroma.OperatorWord: tokyoNightPurple, // word operators — purple
+		chroma.Punctuation:  tokyoNightFg,
 
 		// Generics (diffs, shell output…)
-		chroma.Generic:           "#c0caf5",
-		chroma.GenericDeleted:    "#f7768e",
+		chroma.Generic:           tokyoNightFg,
+		chroma.GenericDeleted:    tokyoNightRed,
 		chroma.GenericEmph:       "italic",
-		chroma.GenericError:      "#f7768e",
-		chroma.GenericHeading:    "#7aa2f7 bold",
-		chroma.GenericInserted:   "#9ece6a bold",
-		chroma.GenericOutput:     "#565f89",
-		chroma.GenericPrompt:     "#c0caf5",
+		chroma.GenericError:      tokyoNightRed,
+		chroma.GenericHeading:    tokyoNightBlue + " bold",
+		chroma.GenericInserted:   tokyoNightGreen + " bold",
+		chroma.GenericOutput:     tokyoNightComment,
+		chroma.GenericPrompt:     tokyoNightFg,
 		chroma.GenericStrong:     "bold",
-		chroma.GenericSubheading: "#7aa2f7 bold",
-		chroma.GenericTraceback:  "#c0caf5",
+		chroma.GenericSubheading: tokyoNightBlue + " bold",
+		chroma.GenericTraceback:  tokyoNightFg,
 		chroma.GenericUnderline:  "underline",
 
-		chroma.Error: "#f7768e",
+		chroma.Error: tokyoNightRed,
 	}))
 }
 

@@ -128,6 +128,17 @@ const (
 	ChromeFooterColorCyan  = "#7dcfff"   // matches --doc-ac-cyan
 )
 
+// tokyoNight* are hex color strings for the Tokyo Night Dark syntax-highlight theme.
+const (
+	tokyoNightFg      = "#c0caf5" // neutral foreground
+	tokyoNightComment = "#565f89" // comments
+	tokyoNightPurple  = "#bb9af7" // keywords
+	tokyoNightBlue    = "#7aa2f7" // functions / attributes
+	tokyoNightOrange  = "#ff9e64" // constants / numbers
+	tokyoNightGreen   = "#9ece6a" // strings
+	tokyoNightRed     = "#f7768e" // errors / deletions
+)
+
 // Font CSS templates with base64 data URI placeholders
 const (
 	interFontTemplate = `@font-face {
