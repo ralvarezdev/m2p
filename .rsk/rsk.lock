@@ -29,3 +29,9 @@ version = 1
   version = "1.0.0"
   source = "registry"
   path = "C:\\Users\\ralva\\.config\\rsk\\cache\\registry\\cli-tool-architect\\1.0.0"
+
+[[skills]]
+  name = "docs-architect"
+  version = "1.1.0"
+  source = "registry"
+  path = "/home/ralvarezdev/.config/rsk/cache/registry/docs-architect/1.1.0"
