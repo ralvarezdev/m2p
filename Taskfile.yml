@@ -79,3 +79,10 @@ tasks:
         cmd: echo '{{.VERSION}}' | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Invalid version {{.VERSION}} — expected X.Y.Z"; exit 1; }
       - git tag -m "{{.TAG}}" {{.TAG}}
       - git push origin {{.TAG}}
+
+  # ci.yml is workflow_dispatch only, so nothing runs on a billed GitHub-hosted
+  # runner. `act` runs that same file locally.
+  ci:local:
+    desc: Run ci.yml locally with act (the workflow is workflow_dispatch only)
+    cmds:
+      - act workflow_dispatch -W .github/workflows/ci.yml --action-offline-mode --pull=false --env-file /dev/null
